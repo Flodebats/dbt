@@ -1,22 +1,17 @@
-with 
+WITH 
+    source AS (
+        SELECT * 
+        FROM {{ source('gz_raw_data', 'raw_gz_sales') }}
+    ), 
+    renamed AS (
+        SELECT 
+            date_date, 
+            orders_id, 
+            pdt_id AS products_id,  -- Renommage de la colonne ici
+            revenue, 
+            quantity
+        FROM source
+    )
+SELECT *
+FROM renamed
 
-source as (
-
-    select * from {{ source('gz_raw_data', 'raw_gz_sales') }}
-
-),
-
-renamed as (
-
-    select
-        date_date,
-        orders_id,
-        products_id,
-        revenue,
-        quantity
-
-    from source
-
-)
-
-select * from renamed
