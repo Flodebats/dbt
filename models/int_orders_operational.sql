@@ -1,19 +1,16 @@
-WITH sales AS (
-SELECT * 
-FROM {{ ref('int_sales_margin') }}
- ), 
-ship AS (
-SELECT *
-FROM {{ ref('stg_gz_raw_data__raw_gz_ship') }}
-),
-combined AS (
-SELECT sales.orders_id,
-sales.quantity,
-sales.revenue,
-sales.quantity * CAST(sales.margin AS FLOAT64) + CAST(ship.shipping_fee AS FLOAT64) - CAST(ship.logcost AS FLOAT64) - CAST(ship.ship_cost AS FLOAT64)AS Operational_margin
-FROM sales
-INNER JOIN ship
-ON sales.orders_id = ship.orders_id
-)
-SELECT *
-FROM combined
+SELECT
+o.orders_id
+,o.date_date
+,ROUND(o.margin + s.shipping_fee - (s.logcost + s.ship_cost),2) AS operational_margin
+,o.quantity
+,o.revenue
+,o.purchase_cost
+,o.margin
+,s.shipping_fee
+,s.logcost
+,s.ship_cost
+FROM {{ref("int_orders_margin")}} o
+LEFT JOIN {{ref("stg_raw__ship")}} s
+USING(orders_id)
+ORDER BY orders_id desc 
+

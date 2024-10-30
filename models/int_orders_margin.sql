@@ -1,21 +1,10 @@
-WITH sales AS (
-SELECT * 
-FROM {{ ref('stg_gz_raw_data__raw_gz_sales') }}
- ), 
-products AS (
-SELECT *
-FROM {{ ref('stg_gz_raw_data__raw_gz_product') }}
-),
-combined AS (
-SELECT sales.orders_id,
-date_date,
-sales.quantity,
-sales.revenue,
-sales.quantity * CAST(products.purchse_price AS FLOAT64) AS purchase_cost,  
-CAST(sales.revenue AS FLOAT64) - (sales.quantity * CAST(products.purchse_price AS FLOAT64)) AS margin  
-FROM sales
-INNER JOIN products
-ON sales.products_id = products.products_id
- )
-SELECT *
-FROM combined
+ SELECT
+     orders_id,
+     date_date,
+     ROUND(SUM(revenue),2) as revenue,
+     ROUND(SUM(quantity),2) as quantity,
+     ROUND(SUM(purchase_cost),2) as purchase_cost,
+     ROUND(SUM(margin),2) as margin
+ FROM {{ ref("int_sales_margin") }}
+ GROUP BY orders_id,date_date
+ ORDER BY orders_id DESC

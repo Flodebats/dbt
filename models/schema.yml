@@ -1,53 +1,55 @@
 version: 2
-
+ 
 sources:
-  - name: gz_raw_data
-    schema: gz_raw_data  # Replace with the actual schema name
-    tables:
-      - name: raw_gz_product
-        description: "Table containing raw product data from Greenweez."
-        columns:
-          - name: products_id
-            description: "Unique identifier for each product."
-            tests:
-              - unique
-              - not_null
-          - name: purchse_price
-            description: "Original column name for purchase price, to be corrected to 'purchase_price'."
-          - name: purchase_price
-            description: "Purchase price of the product, converted to FLOAT64."
-      
-      - name: raw_gz_ship
-        description: "Table containing raw shipping data, including order IDs and shipping costs."
-        columns:
+   - name: raw
+     schema: gz_raw_data
+     tables:
+       - name: sales
+         identifier: raw_gz_sales
+         description: sales of Greenweez / we have on row per productid found in each orders_id
+         columns:
+           - name: date_date
+             description: date of purchase
+           - name: orders_id
+             description: foreign key to ship
+           - name: pdt_id
+             description: foreign key to product
+           - name: revenue
+             description: the amount paid by the customer to purchase the product. revenue = quantity * selling_price
+           - name: quanitity
+             description: the quantity of products purchased for a given order
+         tests:
+           - unique:
+               column_name: "(orders_id || '-' || pdt_id)"
+           ## OR ## if dbt_utils is installed
+           - dbt_utils.unique_combination_of_columns:
+               combination_of_columns:
+                 - orders_id
+                 - pdt_id
+       - name: product
+         identifier: raw_gz_product
+         description: produst of Greenweez
+         columns:
+            - name: products_id
+              description: Primary key
+              tests:
+                - unique
+                - not_null
+            - name: purchase_price
+              description: the purchase price of the product
+
+       - name: ship
+         identifier: raw_gz_ship
+         description: shipping data for Greenweez orders
+         columns:
           - name: orders_id
-            description: "Unique identifier for each order."
+            description: Primary key
             tests:
-              - unique
-              - not_null
+              - unique 
+              - not_null 
           - name: shipping_fee
-            description: "Fee charged for shipping."
-          - name: shipping_fee_1
-            description: "Alternative shipping fee column, to be compared with 'shipping_fee'."
+            description: the price the customer pays for shipping
+          - name: log_cost
+            description: the cost of preparing the parcel in the distribution centre/warehouse
           - name: ship_cost
-            description: "Shipping cost, converted to FLOAT64."
-      
-      - name: raw_gz_sales
-        description: "Table containing sales data from Greenweez. Each row represents a 'product_id' found in an 'orders_id'."
-        columns:
-          - name: date_date
-            description: "Date of purchase."
-          - name: orders_id
-            description: "Unique identifier for each order."
-          - name: pdt_id
-            description: "Original product ID, later renamed to 'products_id'."
-          - name: products_id
-            description: "Renamed product ID."
-          - name: revenue
-            description: "Revenue generated from the sale."
-          - name: quantity
-            description: "Quantity of products sold."
-
-
-
-
+            description: shipping cost paid by Greenweez to the carrier/logistics provider
